@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Inusual Store</title>
+<style>
+  * {
+    box-sizing: border-box;
+    font-family: "Poppins", sans-serif;
+  }
+  body {
+    margin: 0;
+    background: #0d0d0d;
+    color: #fff;
+  }
+  header {
+    background: #1c1c1c;
+    padding: 15px;
+    text-align: center;
+    font-size: 1.6em;
+    font-weight: bold;
+    color: #00ffb3;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+  }
+  .top-bar {
+    display: flex;
+    gap: 10px;
+    padding: 10px 15px;
+    background: #121212;
+    flex-wrap: wrap;
+  }
+  .search-box {
+    flex: 1;
+  }
+  .search-box input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    outline: none;
+    background: #1e1e1e;
+    color: #fff;
+    font-size: 1em;
+  }
+  .categories {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 15px;
+  }
+  .category {
+    padding: 8px 15px;
+    border-radius: 20px;
+    background: #1e1e1e;
+    cursor: pointer;
+    font-size: 0.9em;
+    white-space: nowrap;
+    transition: 0.2s;
+  }
+  .category.active,
+  .category:hover {
+    background: #00ffb3;
+    color: #000;
+  }
+
+  .store-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 15px;
+    padding: 20px;
+  }
+
+  .app-card {
+    background: #181818;
+    border-radius: 15px;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+  }
+  .app-card:hover {
+    transform: scale(1.05);
+    background: #222;
+  }
+  .app-card img {
+    width: 100px;
+    height: 100px;
+    border-radius: 20px;
+    object-fit: cover;
+  }
+  .app-name {
+    margin-top: 8px;
+    font-size: 1em;
+  }
+
+  /* Modal app */
+  .modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.85);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 10;
+  }
+  .modal-content {
+    background: #202020;
+    padding: 20px;
+    border-radius: 20px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    animation: zoomIn 0.3s ease;
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+  @keyframes zoomIn {
+    from { transform: scale(0.7); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  .modal-content img.main-img {
+    width: 200px;
+    height: 200px;
+    border-radius: 25px;
+    object-fit: cover;
+    margin-bottom: 15px;
+  }
+  .modal-content h2 {
+    margin: 10px 0 5px;
+    color: #00ffb3;
+  }
+  .modal-content p {
+    font-size: 0.9em;
+    color: #ccc;
+    margin: 10px;
+  }
+  .download-btn {
+    background: #00ffb3;
+    color: #000;
+    padding: 10px 25px;
+    border: none;
+    border-radius: 12px;
+    font-weight: bold;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .download-btn:hover {
+    background: #00d18c;
+  }
+  .close-btn {
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    background: none;
+    color: #fff;
+    font-size: 1.5em;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* Screenshots */
+  .screenshots {
+    display: flex;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px;
+    margin-top: 10px;
+  }
+  .screenshots img {
+    height: 130px;
+    border-radius: 10px;
+    object-fit: cover;
+    flex-shrink: 0;
+    transition: transform 0.2s;
+    cursor: pointer;
+  }
+  .screenshots img:hover {
+    transform: scale(1.05);
+  }
+  ::-webkit-scrollbar {
+    height: 6px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #00ffb3;
+    border-radius: 3px;
+  }
+
+  /* Fullscreen screenshot */
+  .fullscreen-view {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+  }
+  .fullscreen-view img {
+    max-width: 90%;
+    max-height: 90%;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,255,179,0.4);
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: scale(0.9); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  .fullscreen-close {
+    position: fixed;
+    top: 20px;
+    right: 30px;
+    color: #00ffb3;
+    font-size: 2em;
+    cursor: pointer;
+    user-select: none;
+  }
+</style>
+</head>
+<body>
+
+<header>🌀 Inusual Store</header>
+
+<div class="top-bar">
+  <div class="search-box">
+    <input type="text" id="search" placeholder="Buscar apps...">
+  </div>
+</div>
+
+<div class="categories" id="categories">
+  <div class="category active" data-cat="all">Todo</div>
+  <div class="category" data-cat="juego">Juegos</div>
+  <div class="category" data-cat="musica">Música</div>
+  <div class="category" data-cat="utilidad">Utilidades</div>
+</div>
+
+<div class="store-container" id="store"></div>
+
+<!-- Modal de app -->
+<div class="modal" id="modal">
+  <div class="modal-content" id="modal-content">
+    <button class="close-btn" onclick="closeModal()">×</button>
+    <img id="modal-img" class="main-img" src="">
+    <h2 id="modal-title"></h2>
+    <p id="modal-desc"></p>
+    <div class="screenshots" id="screenshots"></div>
+    <button class="download-btn" id="download-btn">Descargar</button>
+  </div>
+</div>
+
+<!-- Vista fullscreen -->
+<div class="fullscreen-view" id="fullscreen-view">
+  <span class="fullscreen-close" id="close-fullscreen">×</span>
+  <img id="fullscreen-img" src="">
+</div>
+
+<script>
+const apps = [
+  {
+    name: "Axolotl game",
+    category: "juego",
+    icon: "texturas/axolotl.png",
+    image: "texturas/axolotl.png",
+    desc: "distintos desafíos,niveles totalmentelocos y mas,descargalo!",
+    url: "https://www.mediafire.com/file/e9xs4vy9bfoadkp/app-release.apk/file",
+    screenshots: [
+      "texturas/axlt1.jpg",
+      "texturas/axlt2.jpg",
+      "texturas/axlt3.jpg"
+    ]
+  },
+  {
+    name: "Fnanf",
+    category: "juego",
+    icon: "texturas/fnanf.jpg",
+    image: "texturas/fnanf.jpg",
+    desc: "pasa 5 noches con nightmares de fnaf 4,suerte con eso",
+    url: "https://www.mediafire.com/file/00urb5tfm458qka/FNANF.apk/file",
+    screenshots: [
+      "texturas/fase5.png",
+      "texturas/js3.png",      
+      "texturas/fase5f.png",
+      "texturas/j1.png"
+    ]
+  },
+  {
+  name: "cubox",
+  category: "juego",
+  icon: "texturas/cubox.png",
+  image: "texturas/cubox.png",
+  desc: "divertido juego de bloques,suena familiar....",
+  url: "https://www.mediafire.com/file/oc9oj1awcup7mg5/CUBOX.apk/file",
+  screenshots: [
+    "texturas/cubox1.jpg",
+    "texturas/cubox2.jpg",
+    "texturas/cubox3.jpg"
+
+  ]
+},
+  {
+    name: "c.i studios",
+    category: "utilidad",
+    icon: "texturas/cistudios.png",
+    image: "texturas/cistudios.png",
+    desc: "crea animaciones 2d,3d stopmotion y pixelart,version beta",
+    url: "https://www.mediafire.com/file/j6yp3ioujg4b4wo/Cistudios.apk/file",
+    screenshots: [
+      "texturas/cistudios3.jpg",
+      "texturas/cistudios2.jpg", "texturas/cistudios1.jpg",     
+      "texturas/cistudios0.jpg"
+    ]
+  },
+  {
+    name: "Retro Music",
+    category: "musica",
+    icon: "https://cdn-icons-png.flaticon.com/512/727/727240.png",
+    image: "https://cdn.pixabay.com/photo/2016/11/23/15/22/concert-1853664_1280.jpg",
+    desc: "Escucha música con estilo retro y crea tus propias playlists vintage.",
+    url: "https://example.com/retromusic.apk",
+    screenshots: [
+      "https://cdn.pixabay.com/photo/2015/07/17/22/43/records-849052_1280.jpg",
+      "https://cdn.pixabay.com/photo/2015/09/18/20/44/dj-944631_1280.jpg",
+      "https://cdn.pixabay.com/photo/2016/03/27/21/48/music-1280x720.jpg"
+    ]
+  }
+];
+
+const store = document.getElementById("store");
+const modal = document.getElementById("modal");
+const modalImg = document.getElementById("modal-img");
+const modalTitle = document.getElementById("modal-title");
+const modalDesc = document.getElementById("modal-desc");
+const screenshotsContainer = document.getElementById("screenshots");
+const downloadBtn = document.getElementById("download-btn");
+const fullscreenView = document.getElementById("fullscreen-view");
+const fullscreenImg = document.getElementById("fullscreen-img");
+const searchInput = document.getElementById("search");
+
+function renderApps(filterCat = "all", search = "") {
+  store.innerHTML = "";
+  apps
+    .filter(app => (filterCat === "all" || app.category === filterCat) &&
+                   app.name.toLowerCase().includes(search.toLowerCase()))
+    .forEach(app => {
+      const card = document.createElement("div");
+      card.className = "app-card";
+      card.innerHTML = `
+        <img src="${app.icon}" alt="${app.name}">
+        <div class="app-name">${app.name}</div>
+      `;
+      card.onclick = () => openApp(app);
+      store.appendChild(card);
+    });
+}
+renderApps();
+
+function openApp(app) {
+  modalImg.src = app.image;
+  modalTitle.textContent = app.name;
+  modalDesc.textContent = app.desc;
+  downloadBtn.onclick = () => window.open(app.url, "_blank");
+  screenshotsContainer.innerHTML = "";
+  app.screenshots.forEach(src => {
+    const img = document.createElement("img");
+    img.src = src;
+    img.onclick = () => openFullscreen(src);
+    screenshotsContainer.appendChild(img);
+  });
+  modal.style.display = "flex";
+}
+function closeModal() { modal.style.display = "none"; }
+
+function openFullscreen(src) {
+  fullscreenImg.src = src;
+  fullscreenView.style.display = "flex";
+}
+function closeFullscreen() {
+  fullscreenView.style.display = "none";
+}
+
+document.getElementById("close-fullscreen").onclick = closeFullscreen;
+fullscreenView.addEventListener("click", e => { if (e.target === fullscreenView) closeFullscreen(); });
+modal.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+
+document.getElementById("categories").addEventListener("click", e => {
+  if (e.target.classList.contains("category")) {
+    document.querySelectorAll(".category").forEach(c => c.classList.remove("active"));
+    e.target.classList.add("active");
+    renderApps(e.target.dataset.cat, searchInput.value);
+  }
+});
+searchInput.addEventListener("input", () => {
+  const activeCat = document.querySelector(".category.active").dataset.cat;
+  renderApps(activeCat, searchInput.value);
+});
+</script>
+
+</body>
+</html>
